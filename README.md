@@ -226,3 +226,14 @@ https://stackoverflow.com/questions/46802055/tenant-does-not-have-a-spo-license
 
 13) OneDrive developer resources & samples
 https://learn.microsoft.com/en-us/onedrive/developer/sample-code
+
+## 8) Next steps
+
+- Add error handling (catch AuthenticationFailedException) and fall back to AuthenticateAsync() only when silent acquisition fails. [5]
+- Consider graph scopes minimization (least privilege) and incremental consent (request Files.ReadWrite only when you need filesystem access). [7]
+- For org tenants, review conditional access and admin consent policies before shipping. [1]
+
+## 9) License & security notes
+
+- Keep the cache name constant; the cache itself doesn’t “expire,” but tokens inside do—refresh is automatic. If refresh fails (policy change, password reset, consent revoked), you must prompt again. [8][9]
+- Persistent caches are encrypted by platform facilities; avoid unencrypted storage unless absolutely necessary. [8]
