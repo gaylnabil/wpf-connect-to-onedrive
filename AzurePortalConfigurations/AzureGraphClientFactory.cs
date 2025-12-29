@@ -2,11 +2,12 @@
 using Microsoft.Graph;
 using System;
 using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace ConnectToOneDriveAzurePortal.AzurePortalConfigurations
 {
-    public class GraphClientFactory
+    public class AzureGraphClientFactory
     {
         private GraphServiceClient _graphClient;
 
@@ -14,32 +15,34 @@ namespace ConnectToOneDriveAzurePortal.AzurePortalConfigurations
         {
             if (_graphClient != null) return _graphClient;
 
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | ServicePointManager.SecurityProtocol;
+
 
             var credentialOptions = new InteractiveBrowserCredentialOptions
             {
-                TenantId = GraphAppSettings.TenantId,
-                ClientId = GraphAppSettings.ClientId,
+                TenantId = AzureGraphAppSettings.TenantId,
+                ClientId = AzureGraphAppSettings.ClientId,
                 RedirectUri = new Uri("http://localhost"),
                 AuthorityHost = AzureAuthorityHosts.AzurePublicCloud,
                 DisableAutomaticAuthentication = false,
 
                 TokenCachePersistenceOptions = new TokenCachePersistenceOptions
                 {
-                    Name = GraphAppSettings.TokenCacheName,
+                    Name = AzureGraphAppSettings.TokenCacheName,
                 }
             };
 
             InteractiveBrowserCredential credential;
 
-            var systemDriveRoot = Path.Combine(Path.GetPathRoot(Environment.SystemDirectory), "OneDriveAuth"); // Typically "C:\"
+            // Use the full per-user path provided by AzureGraphAppSettings.AuthRecordPath
+            var filePath = $@"C:\OneDriveAuth\{AzureGraphAppSettings.AuthRecordFileName}";
 
-            if (!Directory.Exists(systemDriveRoot))
+            // Ensure the directory exists to avoid UnauthorizedAccessException when creating the file
+            var dir = Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
             {
-                Directory.CreateDirectory(systemDriveRoot);
+                Directory.CreateDirectory(dir);
             }
-
-            // Save the record to disk for future runs
-            var filePath = Path.Combine(systemDriveRoot, GraphAppSettings.AuthRecordPath);
 
             var fileInfo = new FileInfo(filePath);
             if (!fileInfo.Exists)
@@ -47,7 +50,7 @@ namespace ConnectToOneDriveAzurePortal.AzurePortalConfigurations
                 // Trigger interactive auth once and capture the AuthenticationRecord
                 credential = new InteractiveBrowserCredential(credentialOptions);
                 // Request tokens for Microsoft Graph explicitly
-                var tokenRequest = new Azure.Core.TokenRequestContext(GraphAppSettings.Scopes);
+                var tokenRequest = new Azure.Core.TokenRequestContext(AzureGraphAppSettings.Scopes);
                 var record = await credential.AuthenticateAsync(tokenRequest);
 
                 // Save the record to disk for future runs
@@ -70,7 +73,7 @@ namespace ConnectToOneDriveAzurePortal.AzurePortalConfigurations
             }
 
             // Create Graph service client
-            _graphClient = new GraphServiceClient(credential, GraphAppSettings.Scopes);
+            _graphClient = new GraphServiceClient(credential, AzureGraphAppSettings.Scopes);
             return _graphClient;
         }
     }

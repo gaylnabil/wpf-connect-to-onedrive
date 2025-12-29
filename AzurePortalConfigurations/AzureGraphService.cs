@@ -3,11 +3,11 @@ using System.Threading.Tasks;
 
 namespace ConnectToOneDriveAzurePortal.AzurePortalConfigurations
 {
-    public sealed class GraphService
+    public sealed class AzureGraphService
     {
-        private GraphClientFactory _clientFactory;
+        private AzureGraphClientFactory _clientFactory;
 
-        public GraphService(GraphClientFactory clientFactory)
+        public AzureGraphService(AzureGraphClientFactory clientFactory)
         {
             _clientFactory = clientFactory;
         }
@@ -18,7 +18,7 @@ namespace ConnectToOneDriveAzurePortal.AzurePortalConfigurations
             {
                 if (_clientFactory == null)
                 {
-                    _clientFactory = new GraphClientFactory();
+                    _clientFactory = new AzureGraphClientFactory();
                 }
 
                 return _clientFactory.CreateAsync();

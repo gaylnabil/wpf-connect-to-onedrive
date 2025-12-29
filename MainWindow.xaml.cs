@@ -12,12 +12,12 @@ namespace ConnectToOneDriveAzurePortal
     public partial class MainWindow : Window
     {
 
-        private GraphService _graphService;
+        private AzureGraphService _graphService;
 
         public MainWindow()
         {
             InitializeComponent();
-            _graphService = new GraphService(new GraphClientFactory());
+            _graphService = new AzureGraphService(new AzureGraphClientFactory());
         }
 
         private void AzurePortalWindow_Loaded(object sender, RoutedEventArgs e)
